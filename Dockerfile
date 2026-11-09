@@ -36,10 +36,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && a2enmod rewrite headers \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js 20 & NPM for frontend asset compiling
+# Install Node.js 20 for frontend asset compiling
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g npm@latest
+    && apt-get install -y nodejs
 
 # Install Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
