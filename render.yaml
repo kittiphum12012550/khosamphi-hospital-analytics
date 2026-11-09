@@ -1,0 +1,50 @@
+# ==========================================
+# Render.com Blueprint (render.yaml)
+# Khosamphi Hospital Analytics Dashboard
+# ==========================================
+
+services:
+  - type: web
+    name: khosamphi-hospital-analytics
+    env: docker
+    region: singapore # Closest region to Thailand for low latency
+    plan: free # or starter
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: APP_NAME
+        value: "Khosamphi Hospital Analytics"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: RUN_MIGRATIONS
+        value: "true"
+      - key: SEED_DATABASE
+        value: "true"
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false # Set your remote MySQL host (e.g. from Aiven, Railway, or Clever Cloud)
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: HOSPITAL_NAME_TH
+        value: "โรงพยาบาลโกสัมพีนคร"
+      - key: HOSPITAL_NAME_EN
+        value: "Khosamphi Nakhon Hospital"
+      - key: HOSPITAL_PROVINCE
+        value: "กำแพงเพชร"
+      - key: HOSPITAL_BED_CAPACITY
+        value: "30"
+

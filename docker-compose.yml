@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: khosamphi_analytics_app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      APP_NAME: "Khosamphi Hospital Analytics"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: "base64:7eZ7L8Wj2q8VqjV2eL7Wj2q8VqjV2eL7Wj2q8VqjV2c="
+      APP_URL: "http://localhost:8080"
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: khosamphi_hospital_db
+      DB_USERNAME: khosamphi_user
+      DB_PASSWORD: khosamphi_secret_pass
+      RUN_MIGRATIONS: "true"
+      SEED_DATABASE: "true"
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hospital_network
+
+  db:
+    image: mysql:8.0
+    container_name: khosamphi_analytics_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: khosamphi_hospital_db
+      MYSQL_USER: khosamphi_user
+      MYSQL_PASSWORD: khosamphi_secret_pass
+      MYSQL_ROOT_PASSWORD: root_secret_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_secret_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - hospital_network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: khosamphi_analytics_pma
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root_secret_password
+    depends_on:
+      - db
+    networks:
+      - hospital_network
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  hospital_network:
+    driver: bridge
+
