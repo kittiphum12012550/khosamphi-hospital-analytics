@@ -35,11 +35,7 @@ class DashboardController extends Controller
         $serviceTypes = ServiceType::active()->get();
 
         // Distinct years in database for year filter dropdown
-        $availableYears = VisitStatistic::selectRaw('YEAR(service_date) as year')
-            ->distinct()
-            ->orderByDesc('year')
-            ->pluck('year')
-            ->toArray();
+        $availableYears = $this->analyticsService->getAvailableYears();
 
         if (empty($availableYears)) {
             $availableYears = [Carbon::now()->year];

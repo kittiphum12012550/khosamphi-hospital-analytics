@@ -12,6 +12,20 @@ use Illuminate\Support\Facades\DB;
 class DashboardAnalyticsService
 {
     /**
+     * Get distinct service years using syntax supported by the active database.
+     */
+    public function getAvailableYears(): array
+    {
+        return VisitStatistic::query()
+            ->selectRaw($this->datePartExpression('year').' as year')
+            ->distinct()
+            ->orderByDesc('year')
+            ->pluck('year')
+            ->map(static fn ($year) => (int) $year)
+            ->all();
+    }
+
+    /**
      * Get KPI Summary Cards data based on filters
      */
     public function getSummaryCards(array $filters): array
@@ -206,7 +220,8 @@ class DashboardAnalyticsService
             $currentQuery->where('service_type_id', $filters['service_type_id']);
         }
         $currentResults = $currentQuery
-            ->select(DB::raw('MONTH(service_date) as month_num'), DB::raw('SUM(visit_count) as total'))
+            ->selectRaw($this->datePartExpression('month').' as month_num')
+            ->selectRaw('SUM(visit_count) as total')
             ->groupBy('month_num')
             ->pluck('total', 'month_num')
             ->toArray();
@@ -221,7 +236,8 @@ class DashboardAnalyticsService
             $prevQuery->where('service_type_id', $filters['service_type_id']);
         }
         $prevResults = $prevQuery
-            ->select(DB::raw('MONTH(service_date) as month_num'), DB::raw('SUM(visit_count) as total'))
+            ->selectRaw($this->datePartExpression('month').' as month_num')
+            ->selectRaw('SUM(visit_count) as total')
             ->groupBy('month_num')
             ->pluck('total', 'month_num')
             ->toArray();
@@ -243,6 +259,21 @@ class DashboardAnalyticsService
             'previous_year' => $previousYear + 543,
             'previous_data' => $previousYearData,
         ];
+    }
+
+    private function datePartExpression(string $part): string
+    {
+        $driver = DB::connection()->getDriverName();
+
+        return match ([$driver, $part]) {
+            ['sqlite', 'year'] => "strftime('%Y', service_date)",
+            ['sqlite', 'month'] => "CAST(strftime('%m', service_date) AS INTEGER)",
+            ['pgsql', 'year'] => 'EXTRACT(YEAR FROM service_date)',
+            ['pgsql', 'month'] => 'EXTRACT(MONTH FROM service_date)',
+            ['mysql', 'year'], ['mariadb', 'year'] => 'YEAR(service_date)',
+            ['mysql', 'month'], ['mariadb', 'month'] => 'MONTH(service_date)',
+            default => throw new \RuntimeException("Unsupported database date extraction: {$driver}."),
+        };
     }
 
     /**
