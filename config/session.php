@@ -3,7 +3,7 @@
 use Illuminate\Support\Str;
 
 return [
-    'driver' => env('SESSION_DRIVER', 'file'),
+    'driver' => env('SESSION_DRIVER', 'database'),
     'lifetime' => env('SESSION_LIFETIME', 120),
     'expire_on_close' => false,
     'encrypt' => false,
@@ -18,8 +18,7 @@ return [
     ),
     'path' => '/',
     'domain' => env('SESSION_DOMAIN'),
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production'),
     'http_only' => true,
     'same_site' => 'lax',
 ];
-

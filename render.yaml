@@ -23,6 +23,10 @@ services:
         generateValue: true
       - key: APP_URL
         sync: false
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
       - key: RUN_MIGRATIONS
         value: "true"
       - key: SEED_DATABASE
@@ -47,4 +51,3 @@ services:
         value: "กำแพงเพชร"
       - key: HOSPITAL_BED_CAPACITY
         value: "30"
-
