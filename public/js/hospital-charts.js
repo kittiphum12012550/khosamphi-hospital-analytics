@@ -119,6 +119,50 @@ const HospitalCharts = {
         });
     },
 
+    initUsersByDepartment(canvasId, labels, data) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+
+        if (this.charts[canvasId]) {
+            this.charts[canvasId].destroy();
+        }
+
+        this.charts[canvasId] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'จำนวนผู้ใช้งาน',
+                    data: data,
+                    backgroundColor: this.colors.teal,
+                    borderRadius: 6,
+                    maxBarThickness: 36,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.parsed.y.toLocaleString()} บัญชี`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    },
+
     initServiceTypeDoughnut(canvasId, labels, data) {
         const ctx = document.getElementById(canvasId);
         if (!ctx) return;
@@ -267,4 +311,3 @@ const HospitalCharts = {
 };
 
 window.HospitalCharts = HospitalCharts;
-

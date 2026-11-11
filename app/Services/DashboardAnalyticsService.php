@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Department;
 use App\Models\ServiceType;
+use App\Models\User;
 use App\Models\VisitStatistic;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -128,6 +129,34 @@ class DashboardAnalyticsService
     }
 
     /**
+     * Get user account counts grouped by their assigned department
+     */
+    public function getUsersByDepartment(): array
+    {
+        $results = User::query()
+            ->select('department_name', DB::raw('COUNT(*) as total'))
+            ->groupBy('department_name')
+            ->orderByDesc('total')
+            ->orderBy('department_name')
+            ->get();
+
+        $departmentCounts = [];
+
+        foreach ($results as $row) {
+            $department = trim((string) $row->department_name);
+            $label = $department !== '' ? $department : 'ไม่ระบุแผนก';
+            $departmentCounts[$label] = ($departmentCounts[$label] ?? 0) + (int) $row->total;
+        }
+
+        arsort($departmentCounts, SORT_NUMERIC);
+
+        return [
+            'labels' => array_keys($departmentCounts),
+            'data' => array_values($departmentCounts),
+        ];
+    }
+
+    /**
      * Get Service Type Distribution Pie/Doughnut Chart data
      */
     public function getServiceTypeDistribution(array $filters): array
@@ -241,4 +270,3 @@ class DashboardAnalyticsService
         ];
     }
 }
-

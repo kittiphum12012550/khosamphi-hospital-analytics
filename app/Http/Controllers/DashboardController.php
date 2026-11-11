@@ -51,6 +51,7 @@ class DashboardController extends Controller
         // Chart Data Packages
         $dailyTrend = $this->analyticsService->getDailyTrend($filters);
         $departmentBreakdown = $this->analyticsService->getDepartmentBreakdown($filters);
+        $usersByDepartment = $this->analyticsService->getUsersByDepartment();
         $serviceDistribution = $this->analyticsService->getServiceTypeDistribution($filters);
         $monthlyComparison = $this->analyticsService->getMonthlyComparison($filters);
         $hourlyDistribution = $this->analyticsService->getHourlyDistribution($filters);
@@ -71,6 +72,7 @@ class DashboardController extends Controller
             'summary',
             'dailyTrend',
             'departmentBreakdown',
+            'usersByDepartment',
             'serviceDistribution',
             'monthlyComparison',
             'hourlyDistribution',
@@ -96,10 +98,10 @@ class DashboardController extends Controller
             'summary' => $this->analyticsService->getSummaryCards($filters),
             'daily_trend' => $this->analyticsService->getDailyTrend($filters),
             'department_breakdown' => $this->analyticsService->getDepartmentBreakdown($filters),
+            'users_by_department' => $this->analyticsService->getUsersByDepartment(),
             'service_distribution' => $this->analyticsService->getServiceTypeDistribution($filters),
             'monthly_comparison' => $this->analyticsService->getMonthlyComparison($filters),
             'hourly_distribution' => $this->analyticsService->getHourlyDistribution($filters),
         ]);
     }
 }
-

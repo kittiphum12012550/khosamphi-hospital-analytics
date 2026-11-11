@@ -35,6 +35,7 @@ class DashboardTest extends TestCase
         $response = $this->actingAs($user)->get('/dashboard');
         $response->assertStatus(200);
         $response->assertSee('แดชบอร์ดวิเคราะห์สถิติการเข้ารับบริการ');
+        $response->assertSee('usersByDepartmentChart');
     }
 
     public function test_analytics_json_api_returns_valid_structure(): void
@@ -56,10 +57,53 @@ class DashboardTest extends TestCase
             ],
             'daily_trend' => ['labels', 'data'],
             'department_breakdown' => ['labels', 'data'],
+            'users_by_department' => ['labels', 'data'],
             'service_distribution' => ['labels', 'data'],
             'monthly_comparison' => ['labels', 'current_year', 'current_data', 'previous_year', 'previous_data'],
             'hourly_distribution' => ['labels', 'data'],
         ]);
+    }
+
+    public function test_dashboard_reports_user_counts_by_department_including_unassigned_users(): void
+    {
+        User::create([
+            'name' => 'ผู้ใช้แผนกทดสอบ 1',
+            'email' => 'department-one@khosamphi.go.th',
+            'password' => Hash::make('password'),
+            'role' => 'staff',
+            'department_name' => 'แผนกทดสอบ',
+            'is_active' => true,
+        ]);
+        User::create([
+            'name' => 'ผู้ใช้แผนกทดสอบ 2',
+            'email' => 'department-two@khosamphi.go.th',
+            'password' => Hash::make('password'),
+            'role' => 'viewer',
+            'department_name' => 'แผนกทดสอบ',
+            'is_active' => false,
+        ]);
+        User::create([
+            'name' => 'ผู้ใช้ไม่ระบุแผนก',
+            'email' => 'no-department@khosamphi.go.th',
+            'password' => Hash::make('password'),
+            'role' => 'viewer',
+            'department_name' => ' ',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs(User::where('role', 'staff')->first())
+            ->getJson('/dashboard/analytics-data');
+
+        $response->assertOk();
+        $userCounts = $response->json('users_by_department');
+
+        $departmentIndex = array_search('แผนกทดสอบ', $userCounts['labels'], true);
+        $unassignedIndex = array_search('ไม่ระบุแผนก', $userCounts['labels'], true);
+
+        $this->assertNotFalse($departmentIndex);
+        $this->assertNotFalse($unassignedIndex);
+        $this->assertSame(2, $userCounts['data'][$departmentIndex]);
+        $this->assertSame(1, $userCounts['data'][$unassignedIndex]);
     }
 
     public function test_viewer_cannot_access_admin_departments_crud(): void
@@ -79,4 +123,3 @@ class DashboardTest extends TestCase
         $response->assertSee('จัดการแผนก');
     }
 }
-

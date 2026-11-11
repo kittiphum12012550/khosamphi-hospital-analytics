@@ -256,6 +256,29 @@
     </div>
 </div>
 
+<!-- User Accounts by Department -->
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card chart-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-person-lines-fill text-primary"></i>
+                    <span>จำนวนบัญชีผู้ใช้แยกตามแผนก (Users by Department)</span>
+                </div>
+            </div>
+            <div class="card-body">
+                @if(count($usersByDepartment['labels']) > 0)
+                    <div style="height: 290px;">
+                        <canvas id="usersByDepartmentChart"></canvas>
+                    </div>
+                @else
+                    <div class="text-center py-4 text-muted">ยังไม่มีบัญชีผู้ใช้งานในระบบ</div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Charts Row 3: Monthly Comparison -->
 <div class="row g-3 mb-4">
     <div class="col-12">
@@ -336,6 +359,9 @@
         const deptBreakdown = @json($departmentBreakdown);
         HospitalCharts.initDepartmentBar('departmentBreakdownChart', deptBreakdown.labels, deptBreakdown.data);
 
+        const usersByDepartment = @json($usersByDepartment);
+        HospitalCharts.initUsersByDepartment('usersByDepartmentChart', usersByDepartment.labels, usersByDepartment.data);
+
         const serviceDist = @json($serviceDistribution);
         HospitalCharts.initServiceTypeDoughnut('serviceDistributionChart', serviceDist.labels, serviceDist.data);
 
@@ -354,4 +380,3 @@
     });
 </script>
 @endpush
-
