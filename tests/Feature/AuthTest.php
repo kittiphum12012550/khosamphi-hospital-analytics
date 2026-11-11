@@ -19,6 +19,19 @@ class AuthTest extends TestCase
         $response->assertSee('โรงพยาบาลโกสัมพีนคร');
     }
 
+    public function test_login_form_uses_https_when_behind_a_tls_terminating_proxy(): void
+    {
+        $response = $this->withServerVariables([
+            'REMOTE_ADDR' => '10.0.0.1',
+            'HTTP_X_FORWARDED_PROTO' => 'https',
+            'HTTP_X_FORWARDED_HOST' => 'hospital.example.com',
+            'HTTP_X_FORWARDED_PORT' => '443',
+        ])->get('/login');
+
+        $response->assertOk()
+            ->assertSee('action="https://hospital.example.com/login"', false);
+    }
+
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
         $user = User::create([
@@ -80,4 +93,3 @@ class AuthTest extends TestCase
         $this->assertGuest();
     }
 }
-
