@@ -15,8 +15,6 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             DepartmentSeeder::class,
             ServiceTypeSeeder::class,
-            VisitStatisticSeeder::class,
         ]);
     }
 }
-

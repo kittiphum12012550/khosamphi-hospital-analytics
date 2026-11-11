@@ -38,6 +38,11 @@ class DashboardTest extends TestCase
         $response->assertSee('usersByDepartmentChart');
     }
 
+    public function test_database_seeder_does_not_create_demo_visit_statistics(): void
+    {
+        $this->assertDatabaseCount('visit_statistics', 0);
+    }
+
     public function test_analytics_json_api_returns_valid_structure(): void
     {
         $user = User::where('role', 'staff')->first();
