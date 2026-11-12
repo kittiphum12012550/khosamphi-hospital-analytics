@@ -58,11 +58,8 @@ WORKDIR /var/www/html
 # Copy Project Files
 COPY . /var/www/html
 
-# Install Composer Dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Build Frontend Assets
-RUN if [ -f package.json ]; then npm install && npm run build; fi
+# Prepare temporary .env for build process
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
 # Prepare Storage and Cache Directories
 RUN mkdir -p /var/www/html/storage/framework/cache/data \
@@ -73,6 +70,12 @@ RUN mkdir -p /var/www/html/storage/framework/cache/data \
     /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Install Composer Dependencies (use --no-scripts during build to prevent package:discover failing before runtime env is injected)
+RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
+
+# Build Frontend Assets
+RUN if [ -f package.json ]; then npm install && npm run build; fi
 
 # Copy and set permissions for Entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh

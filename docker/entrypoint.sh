@@ -37,10 +37,11 @@ if [ -z "$APP_KEY" ]; then
 fi
 
 # Clear old cached files first to prevent stale references
-echo "--> Clearing stale caches..."
+echo "--> Clearing stale caches and discovering packages..."
 php artisan config:clear || true
 php artisan view:clear || true
 php artisan route:clear || true
+php artisan package:discover --ansi || true
 
 # Run Database Migrations in production
 if [ "$RUN_MIGRATIONS" = "true" ] || [ "$APP_ENV" = "production" ]; then
