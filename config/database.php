@@ -2,13 +2,23 @@
 
 use Illuminate\Support\Str;
 
+$defaultConnection = env('DB_CONNECTION');
+$dbHost = env('DB_HOST');
+
+// Auto-switch to pgsql if Supabase host or pooler is configured
+if ((empty($defaultConnection) || $defaultConnection === 'sqlite') && $dbHost && (str_contains($dbHost, 'supabase') || str_contains($dbHost, 'pooler'))) {
+    $defaultConnection = 'pgsql';
+}
+
 return [
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => $defaultConnection ?: 'pgsql',
     'connections' => [
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DATABASE_URL'),
-            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            'database' => (env('DB_DATABASE') && !str_contains(env('DB_DATABASE'), '/') && !str_contains(env('DB_DATABASE'), '\\') && !str_ends_with(env('DB_DATABASE'), '.sqlite'))
+                ? database_path('database.sqlite')
+                : env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
@@ -43,7 +53,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'sslmode' => env('DB_SSLMODE', 'require'),
         ],
     ],
     'migrations' => 'migrations',
