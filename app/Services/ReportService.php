@@ -21,10 +21,12 @@ class ReportService
 
         switch ($reportType) {
             case 'monthly':
+                $yearExpr = $this->datePartExpression('year');
+                $monthExpr = $this->datePartExpression('month');
                 $items = $query
                     ->select(
-                        DB::raw('YEAR(service_date) as year'),
-                        DB::raw('MONTH(service_date) as month'),
+                        DB::raw("{$yearExpr} as year"),
+                        DB::raw("{$monthExpr} as month"),
                         DB::raw('SUM(visit_count) as total_visits'),
                         DB::raw('COUNT(DISTINCT service_date) as active_days'),
                         DB::raw('COUNT(DISTINCT department_id) as dept_count')
@@ -47,9 +49,10 @@ class ReportService
                 break;
 
             case 'yearly':
+                $yearExpr = $this->datePartExpression('year');
                 $items = $query
                     ->select(
-                        DB::raw('YEAR(service_date) as year'),
+                        DB::raw("{$yearExpr} as year"),
                         DB::raw('SUM(visit_count) as total_visits'),
                         DB::raw('COUNT(DISTINCT service_date) as active_days')
                     )
@@ -125,6 +128,21 @@ class ReportService
             'generated_at' => Carbon::now()->locale('th')->isoFormat('D MMMM YYYY H:mm น.'),
             'hospital_name' => config('hospital.name_th', 'โรงพยาบาลโกสัมพีนคร'),
         ];
+    }
+
+    private function datePartExpression(string $part): string
+    {
+        $driver = DB::connection()->getDriverName();
+
+        return match ([$driver, $part]) {
+            ['sqlite', 'year'] => "strftime('%Y', service_date)",
+            ['sqlite', 'month'] => "CAST(strftime('%m', service_date) AS INTEGER)",
+            ['pgsql', 'year'] => 'EXTRACT(YEAR FROM service_date)',
+            ['pgsql', 'month'] => 'EXTRACT(MONTH FROM service_date)',
+            ['mysql', 'year'], ['mariadb', 'year'] => 'YEAR(service_date)',
+            ['mysql', 'month'], ['mariadb', 'month'] => 'MONTH(service_date)',
+            default => 'YEAR(service_date)',
+        };
     }
 }
 
